@@ -1,0 +1,36 @@
+﻿body 
+{
+    font-family:Segoe UI,Verdana,Geneva,sans-serif;
+}
+
+#container
+{
+     width:800px; 
+     margin: 0 auto; 
+     display:block;
+}
+
+#messages
+{
+     clear:both;
+     margin-top: 2px;
+}
+
+
+#scoreboard
+{
+    height: 250px
+}
+
+
+.playArea
+{
+    float:left;
+}
+
+.sideBar
+{
+    float:left; 
+    margin-left:20px
+}
+
