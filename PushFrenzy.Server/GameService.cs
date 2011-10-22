@@ -9,28 +9,28 @@ using Microsoft.ServiceModel.WebSockets;
 
 namespace PushFrenzy.Server
 {
-    public class GameService : WebSocketService
-    {
-        private static GameServer server = new GameServer();
+    //public class GameService : WebSocketService
+    //{
+    //    private static GameServer server = new GameServer();
 
-        private GameConnection connection;
+    //    private GameConnection connection;
 
-        public override void OnOpen()
-        {
-            string nickname = QueryParameters["nickname"];
-            int gameSize = int.Parse(QueryParameters["gamesize"]);
-            connection = server.JoinGame(this, nickname, gameSize);            
-        }
+    //    public override void OnOpen()
+    //    {
+    //        string nickname = QueryParameters["nickname"];
+    //        int gameSize = int.Parse(QueryParameters["gamesize"]);
+    //        connection = server.JoinGame(this, nickname, gameSize);            
+    //    }
 
-        public override void OnMessage(string message)
-        {
-            connection.ProcessCommand(message);
-        }
+    //    public override void OnMessage(string message)
+    //    {
+    //        connection.ProcessCommand(message);
+    //    }
 
-        protected override void OnClose()
-        {
-            if(connection != null)
-                connection.Disconnect();
-        }       
-    }
+    //    protected override void OnClose()
+    //    {
+    //        if(connection != null)
+    //            connection.Disconnect();
+    //    }       
+    //}
 }

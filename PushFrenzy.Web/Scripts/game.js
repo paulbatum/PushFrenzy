@@ -1,6 +1,6 @@
 (function() {
   window.game = (function($, JSON) {
-    var drawCircle, drawCross, game, render, renderGrid, renderPlayers, renderSweep, updateHandlers, updateScoreboard;
+    var bindEvents, drawCircle, drawCross, game, render, renderGrid, renderPlayers, renderSweep, updateScoreboard;
     updateScoreboard = function(gameState) {
       var name, player, _ref;
       $('#scoreboard').html('SCORES<br/><br/>');
@@ -87,58 +87,78 @@
       context.moveTo(centerX, centerY - (renderInfo.cellHeight / 3));
       return context.lineTo(centerX, centerY + (renderInfo.cellHeight / 3));
     };
-    updateHandlers = {
-      NewGame: function(gameState, stateUpdate) {
-        gameState.grid = stateUpdate.dimensions;
-        return $('#controls').show();
-      },
-      PlayerAdded: function(gameState, stateUpdate) {
-        gameState.players[stateUpdate.name] = stateUpdate;
-        gameState.players[stateUpdate.name].pieces = [];
-        gameState.players[stateUpdate.name].score = 0;
-        return updateScoreboard(gameState);
-      },
-      PlayerMoved: function(gameState, stateUpdate) {
+    bindEvents = function(connection, gameState) {
+      var events;
+      events = connection.game;
+      events.movePlayer = function(name, position) {
         var player;
-        player = gameState.players[stateUpdate.player];
-        player.x = stateUpdate.x;
-        return player.y = stateUpdate.y;
-      },
-      PieceAdded: function(gameState, stateUpdate) {
-        return gameState.players[stateUpdate.owner].pieces.push(stateUpdate);
-      },
-      PieceMoved: function(gameState, stateUpdate) {
+        player = gameState.players[name];
+        player.x = position.x;
+        player.y = position.y;
+        return render(gameState);
+      };
+      events.startGame = function(dimensions) {
+        gameState.grid = dimensions;
+        $('#controls').show();
+        return render(gameState);
+      };
+      events.addPlayer = function(name, color, position) {
+        gameState.players[name] = {
+          name: name,
+          color: color,
+          x: position.x,
+          y: position.y,
+          pieces: [],
+          score: 0
+        };
+        updateScoreboard(gameState);
+        return render(gameState);
+      };
+      events.addPiece = function(name, position) {
+        gameState.players[name].pieces.push({
+          x: position.x,
+          y: position.y
+        });
+        return render(gameState);
+      };
+      events.movePiece = function(name, origin, destination) {
         var match;
-        match = $.grep(gameState.players[stateUpdate.owner].pieces, function(piece, index) {
-          return piece.x === stateUpdate.origin.x && piece.y === stateUpdate.origin.y;
+        match = $.grep(gameState.players[name].pieces, function(piece, index) {
+          return piece.x === origin.x && piece.y === origin.y;
         });
-        match[0].x = stateUpdate.destination.x;
-        return match[0].y = stateUpdate.destination.y;
-      },
-      PieceRemoved: function(gameState, stateUpdate) {
+        match[0].x = destination.x;
+        match[0].y = destination.y;
+        return render(gameState);
+      };
+      events.updateSweep = function(start, end) {
+        gameState.sweep = {
+          start: start,
+          end: end
+        };
+        return render(gameState);
+      };
+      events.removePiece = function(name, position) {
         var player;
-        player = gameState.players[stateUpdate.owner];
-        return player.pieces = $.grep(player.pieces, function(piece, index) {
-          return !(piece.x === stateUpdate.x && piece.y === stateUpdate.y);
+        player = gameState.players[name];
+        player.pieces = $.grep(player.pieces, function(piece, index) {
+          return !(piece.x === position.x && piece.y === position.y);
         });
-      },
-      SweepUpdated: function(gameState, stateUpdate) {
-        return gameState.sweep = stateUpdate;
-      },
-      ScoresUpdated: function(gameState, stateUpdate) {
-        var index, score, _ref;
-        _ref = stateUpdate.scores;
-        for (index in _ref) {
-          score = _ref[index];
+        return render(gameState);
+      };
+      events.updateScores = function(scores) {
+        var index, score;
+        for (index in scores) {
+          score = scores[index];
           gameState.players[score.name].score = score.value;
         }
         return updateScoreboard(gameState);
-      },
-      PlayerRemoved: function(gameState, stateUpdate) {
-        delete gameState.players[stateUpdate.name];
+      };
+      return events.removePlayer = function(name) {
+        delete gameState.players[name];
         $('#messages').prepend("<div>" + stateUpdate.name + " left.</div>");
-        return updateScoreboard(gameState);
-      }
+        updateScoreboard(gameState);
+        return render(gameState);
+      };
     };
     return game = {
       createNewGameState: function() {
@@ -157,15 +177,7 @@
           }
         };
       },
-      processMessage: function(gameState, stringPayload) {
-        var index, stateUpdates, updateItem;
-        stateUpdates = JSON.parse(stringPayload);
-        for (index in stateUpdates) {
-          updateItem = stateUpdates[index];
-          updateHandlers[updateItem.type](gameState, updateItem.body);
-        }
-        return render(gameState);
-      }
+      bindEvents: bindEvents
     };
   })(jQuery, JSON);
 }).call(this);

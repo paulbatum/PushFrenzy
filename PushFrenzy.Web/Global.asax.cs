@@ -15,9 +15,9 @@ namespace PushFrenzy.Web
 
         protected void Application_Start(object sender, EventArgs e)
         {
-            RouteTable.Routes.Add(new ServiceRoute("connect", 
-                new WebSocketServiceHostFactory(), 
-                typeof(GameService)));
+            //RouteTable.Routes.Add(new ServiceRoute("connect", 
+            //    new WebSocketServiceHostFactory(), 
+            //    typeof(GameService)));
         }
        
     }

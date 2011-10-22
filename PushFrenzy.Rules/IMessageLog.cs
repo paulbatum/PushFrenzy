@@ -14,7 +14,7 @@ namespace PushFrenzy.Rules
         void AddPiece(Slot slot);
         void MovePiece(Slot origin, Slot destination);
         void UpdateSweep(Sweep sweep);
-        void RemovePiece(Slot slot);
+        void RemovePiece(Player player, Slot slot);
         void UpdateScores(Game game);
 
         void RemovePlayer(Player player);

@@ -76,9 +76,6 @@ namespace PushFrenzy.Server
             Messages.Add(obj); 
         }
 
-
-
-
         public void MovePiece(Slot origin, Slot destination)
         {
             JsonObject obj = BuildGameMessageJson(GameMessageType.PieceMoved, msg =>
@@ -113,11 +110,11 @@ namespace PushFrenzy.Server
         }
 
 
-        public void RemovePiece(Slot slot)
+        public void RemovePiece(Player player, Slot slot)
         {
             JsonObject obj = BuildGameMessageJson(GameMessageType.PieceRemoved, msg =>
             {
-                msg.owner = slot.Piece.Owner.Name;
+                msg.owner = player.Name;
                 msg.x = slot.X;
                 msg.y = slot.Y;
             });
@@ -154,7 +151,7 @@ namespace PushFrenzy.Server
 
             Messages.Add(obj);   
         }
-    }
+    }    
 
     public enum GameMessageType
     {
@@ -168,4 +165,6 @@ namespace PushFrenzy.Server
         SweepUpdated,
         ScoresUpdated
     }
+
+    
 }

@@ -10,6 +10,7 @@ using PushFrenzy.Rules;
 using PushFrenzy.Rules.GameCommands;
 using Microsoft.ServiceModel.WebSockets;
 using Timer = System.Threading.Timer;
+using SignalR.Hubs;
 
 namespace PushFrenzy.Server
 {
@@ -17,7 +18,7 @@ namespace PushFrenzy.Server
     {
         private ConcurrentDictionary<GameConfiguration, HostedGame> games = new ConcurrentDictionary<GameConfiguration, HostedGame>();        
 
-        public GameConnection JoinGame(GameService gameService, string nickname, int gameSize)
+        public GameConnection JoinGame(string clientId, string nickname, int gameSize, IHub hub)
         {
             GameConfiguration config = GameConfiguration.FromNumberOfPlayers(gameSize);
             GameConnection connection = null;
@@ -32,7 +33,7 @@ namespace PushFrenzy.Server
                 }
                 else
                 {
-                    connection = game.TryAddPlayer(gameService, nickname);
+                    connection = game.TryAddPlayer(clientId, nickname, hub);
                 }
             }
 
@@ -43,37 +44,44 @@ namespace PushFrenzy.Server
     public class HostedGame
     {
         private GameConfiguration config;
-        private WebSocketCollection<GameService> clients;
+        private List<string> clients;
         private Game game;
         private object gameLock = new object();
         private object commandLock = new object();
-        private object sendLock = new object();
-        private Timer gameTimer; 
+        private Timer gameTimer;
+        private IHub hub;
 
         public bool Started { get; private set; }
+        public Guid GameId { get; private set; }
 
         public HostedGame(GameConfiguration config)
         {
+            GameId = new Guid();
             this.config = config;
-            clients = new WebSocketCollection<GameService>();
+            clients = new List<string>();
             game = new Game(config.BoardWidth, config.BoardHeight);
         }
        
-        public GameConnection TryAddPlayer(GameService client, string name)
+        public GameConnection TryAddPlayer(string clientId, string name, IHub hub)
         {
             lock (gameLock)
             {
                 if (Started)
                     return null;
 
-                clients.Add(client);
+                clients.Add(clientId);
                 var player = new Player(name);
                 game.AddPlayer(player);
+                
+                hub.GroupManager.AddToGroup(clientId, this.GameId.ToString()).Wait();
 
                 if (clients.Count == config.NumberOfPlayers)
-                    StartGame();
+                {
+                    this.hub = hub;
+                    StartGame();                    
+                }
 
-                return new GameConnection(client, player, this);
+                return new GameConnection(clientId, player, this);
             }
         }
 
@@ -81,15 +89,15 @@ namespace PushFrenzy.Server
         {
             lock (commandLock)
             {
-                var log = new JsonMessageLog();
+                var log = new DeferredCallLog();
                 command.Execute(game, log);
-                DispatchMessages(log);
+                log.ExecuteCalls(hub.Agent, this.GameId.ToString());
             }
         }
 
         public void Disconnect(GameConnection connection)
         {
-            clients.Remove(connection.Client);
+            clients.Remove(connection.ClientId);
 
             if (clients.Count == 0 && gameTimer != null)
                 gameTimer.Dispose();
@@ -104,58 +112,42 @@ namespace PushFrenzy.Server
         {
             ProcessCommand(new StartGameCommand());
             Started = true;
-            gameTimer = new Timer(o => ProcessCommand(new TimerTickCommand()), null, 0, Game.ExpectedTickIntervalMilliseconds);
+            //gameTimer = new Timer(o => ProcessCommand(new TimerTickCommand()), null, 0, Game.ExpectedTickIntervalMilliseconds);
         }        
 
-        private void DispatchMessages(JsonMessageLog log)
-        {
-            if (log.Messages.Count > 0)
-            {
-                var array = new JsonArray(log.Messages);
-                clients.Broadcast(array.ToString());
-            }
-        }
     }
 
     public class GameConnection
     {
-        public GameService Client { get; private set; }
+        public string ClientId { get; private set; }
         public Player Player { get; private set; }
         private HostedGame hostedGame;
 
-        internal GameConnection(GameService client, Player player, HostedGame hostedGame)
+        internal GameConnection(string clientId, Player player, HostedGame hostedGame)
         {
-            this.Client = client;
+            this.ClientId = clientId;
             this.Player = player;
             this.hostedGame = hostedGame;            
-        }
-
-        public void ProcessCommand(string message)
-        {
-            var command = ParseCommand(Player, message);
-            hostedGame.ProcessCommand(command);
-        }
+        }     
 
         public void Disconnect()
         {
             hostedGame.Disconnect(this);
         }
 
-        private GameCommand ParseCommand(Player origin, string value)
+        public void Move(string direction)
         {
-            dynamic jsonValue = JsonValue.Parse(value);
-            string commandType = (string)jsonValue.Type;
-            switch (commandType)
-            {
-                case "PlayerMoveCommand":
-                    return new PlayerMoveCommand
+            var command = new PlayerMoveCommand
                     {
-                        Direction = (Direction)Enum.Parse(typeof(Direction), (string)jsonValue.Direction),
-                        Player = origin
+                        Direction = (Direction)Enum.Parse(typeof(Direction), direction),
+                        Player = this.Player
                     };
-                default:
-                    throw new ArgumentException("Unknown command '{0}'", commandType);
-            }
+            hostedGame.ProcessCommand(command);
+        }
+
+        public string GameId
+        {
+            get { return this.hostedGame.GameId.ToString(); }
         }
     }
 

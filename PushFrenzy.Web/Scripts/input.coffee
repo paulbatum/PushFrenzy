@@ -5,7 +5,7 @@
 		else
 			$('#playbutton').removeAttr('disabled')
 	
-	bindKeyboardControls = (websocket) ->
+	bindKeyboardControls = (connection) ->
 		moveKeyMap =
 			Down: ['down', 's']
 			Up: ['up', 'w']
@@ -13,35 +13,31 @@
 			Right: ['right', 'd']        
 		for direction, keys of moveKeyMap
 			for key in keys			
-				do (direction, key) -> $(document).bind('keydown', key, -> move(websocket, direction)) 									
+				do (direction, key) -> $(document).bind('keydown', key, -> move(connection, direction)) 									
 		null		
 	
-	bindTouchControls = (websocket) ->
+	bindTouchControls = (connection) ->
 		interval = {}
 		$('#arrorImg').bind('dragstart', (event) -> event.preventDefault())
 		$('#arrowMap area')
 			.click( (event) -> event.preventDefault())
 			.mousedown( (event) ->
-				moveFn = -> move(websocket, $(event.target).attr('alt'))
+				moveFn = -> move(connection, $(event.target).attr('alt'))
 				moveFn()
 				clearInterval(interval) if interval
 				interval = setInterval(moveFn, 200)
 				event.preventDefault())
 			.bind('mouseup mouseleave', -> clearInterval(interval))
 	
-	move = (websocket, direction) ->
-		msg =
-			Type: 'PlayerMoveCommand'
-			Direction: direction
-		
-		websocket.send(JSON.stringify(msg))
+	move = (connection, direction) ->				
+		connection.game.move(direction)
 	
 	input = 
 		prepareNameBox: -> 
 			updatePlayEnabled()
 			$('#namebox').keyup(updatePlayEnabled).focus()
-		bindControls: (websocket) ->
-			bindTouchControls(websocket)
-			bindKeyboardControls(websocket)
+		bindControls: (connection) ->
+			bindTouchControls(connection)
+			bindKeyboardControls(connection)
 	
 )(jQuery, game)

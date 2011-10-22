@@ -8,7 +8,7 @@
         return $('#playbutton').removeAttr('disabled');
       }
     };
-    bindKeyboardControls = function(websocket) {
+    bindKeyboardControls = function(connection) {
       var direction, key, keys, moveKeyMap, _fn, _i, _len;
       moveKeyMap = {
         Down: ['down', 's'],
@@ -20,7 +20,7 @@
         keys = moveKeyMap[direction];
         _fn = function(direction, key) {
           return $(document).bind('keydown', key, function() {
-            return move(websocket, direction);
+            return move(connection, direction);
           });
         };
         for (_i = 0, _len = keys.length; _i < _len; _i++) {
@@ -30,7 +30,7 @@
       }
       return null;
     };
-    bindTouchControls = function(websocket) {
+    bindTouchControls = function(connection) {
       var interval;
       interval = {};
       $('#arrorImg').bind('dragstart', function(event) {
@@ -41,7 +41,7 @@
       }).mousedown(function(event) {
         var moveFn;
         moveFn = function() {
-          return move(websocket, $(event.target).attr('alt'));
+          return move(connection, $(event.target).attr('alt'));
         };
         moveFn();
         if (interval) {
@@ -53,22 +53,17 @@
         return clearInterval(interval);
       });
     };
-    move = function(websocket, direction) {
-      var msg;
-      msg = {
-        Type: 'PlayerMoveCommand',
-        Direction: direction
-      };
-      return websocket.send(JSON.stringify(msg));
+    move = function(connection, direction) {
+      return connection.game.move(direction);
     };
     return input = {
       prepareNameBox: function() {
         updatePlayEnabled();
         return $('#namebox').keyup(updatePlayEnabled).focus();
       },
-      bindControls: function(websocket) {
-        bindTouchControls(websocket);
-        return bindKeyboardControls(websocket);
+      bindControls: function(connection) {
+        bindTouchControls(connection);
+        return bindKeyboardControls(connection);
       }
     };
   })(jQuery, game);

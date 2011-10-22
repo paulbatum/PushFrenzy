@@ -210,7 +210,7 @@ namespace PushFrenzy.Rules
 
             foreach (var slot in slotsToClear)
             {
-                log.RemovePiece(slot);
+                log.RemovePiece(slot.Piece.Owner, slot);
                 slot.Piece.Owner.Score++;
                 slot.Piece = null;                
             }

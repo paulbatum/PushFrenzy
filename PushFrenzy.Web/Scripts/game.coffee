@@ -72,44 +72,63 @@ window.game = (($, JSON) ->
 		context.moveTo(centerX, centerY - (renderInfo.cellHeight / 3))
 		context.lineTo(centerX, centerY + (renderInfo.cellHeight / 3))
 	
-	updateHandlers =
-		NewGame: (gameState, stateUpdate) ->
-			gameState.grid = stateUpdate.dimensions
+	bindEvents = (connection, gameState) ->
+		events = connection.game;
+	
+		events.movePlayer = (name, position) ->
+			player = gameState.players[name]
+			player.x = position.x
+			player.y = position.y
+			render(gameState)
+		events.startGame = (dimensions) ->
+			gameState.grid = dimensions
 			$('#controls').show()        
-		PlayerAdded: (gameState, stateUpdate) ->
-			gameState.players[stateUpdate.name] = stateUpdate
-			gameState.players[stateUpdate.name].pieces = []
-			gameState.players[stateUpdate.name].score = 0
+			render(gameState)
+		events.addPlayer = (name, color, position) ->
+			gameState.players[name] =
+				name: name
+				color: color
+				x: position.x
+				y: position.y
+				pieces: []
+				score: 0
 			updateScoreboard(gameState)        
-		PlayerMoved: (gameState, stateUpdate) ->
-			player = gameState.players[stateUpdate.player]
-			player.x = stateUpdate.x
-			player.y = stateUpdate.y        
-		PieceAdded: (gameState, stateUpdate) ->
-			gameState.players[stateUpdate.owner].pieces.push(stateUpdate)        
-		PieceMoved: (gameState, stateUpdate) ->
+			render(gameState)
+		events.addPiece = (name, position) ->
+			gameState.players[name].pieces.push({
+				x: position.x
+				y: position.y
+			})
+			render(gameState)
+		events.movePiece = (name, origin, destination) ->
 			match = $.grep(
-				gameState.players[stateUpdate.owner].pieces, 
-				(piece, index) -> piece.x is stateUpdate.origin.x and piece.y is stateUpdate.origin.y            
+				gameState.players[name].pieces, 
+				(piece, index) -> piece.x is origin.x and piece.y is origin.y            
 			)
-			match[0].x = stateUpdate.destination.x
-			match[0].y = stateUpdate.destination.y        
-		PieceRemoved: (gameState, stateUpdate) ->
-			player = gameState.players[stateUpdate.owner]
+			match[0].x = destination.x
+			match[0].y = destination.y        
+			render(gameState)
+		events.updateSweep = (start, end) ->
+			gameState.sweep =
+				start:start
+				end: end	
+			render(gameState)
+		events.removePiece = (name, position) ->
+			player = gameState.players[name]
 			player.pieces = $.grep(
 				player.pieces, 
-				(piece, index) -> not (piece.x is stateUpdate.x and piece.y is stateUpdate.y)                   
+				(piece, index) -> not (piece.x is position.x and piece.y is position.y)                   
 			)
-		SweepUpdated: (gameState, stateUpdate) ->
-			gameState.sweep = stateUpdate        
-		ScoresUpdated: (gameState, stateUpdate) ->
-			for index, score of stateUpdate.scores
-				gameState.players[score.name].score = score.value				
+			render(gameState)
+		events.updateScores = (scores) ->		
+			for index, score of scores
+				gameState.players[score.name].score = score.value					
 			updateScoreboard(gameState)        
-		PlayerRemoved: (gameState, stateUpdate) ->
-			delete gameState.players[stateUpdate.name]
+		events.removePlayer = (name) ->
+			delete gameState.players[name]
 			$('#messages').prepend("<div>#{stateUpdate.name} left.</div>")
 			updateScoreboard(gameState)        
+			render(gameState)
 	
 	game = 
 		createNewGameState: -> {
@@ -119,10 +138,6 @@ window.game = (($, JSON) ->
 				start: { x: 0, y: 0 }
 				end: { x: 0, y: 9 }				
 		}
-		processMessage: (gameState, stringPayload) ->
-			stateUpdates = JSON.parse(stringPayload)
-			for index, updateItem of stateUpdates
-				updateHandlers[updateItem.type](gameState, updateItem.body)
-			render(gameState)    
+		bindEvents: bindEvents 
 
 )(jQuery, JSON)
