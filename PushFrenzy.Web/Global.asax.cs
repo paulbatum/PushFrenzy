@@ -7,6 +7,9 @@ using System.Web.Routing;
 using System.Web.Security;
 using System.Web.SessionState;
 using PushFrenzy.Server;
+using SignalR;
+using SignalR.Infrastructure;
+using SignalR.Transports;
 
 namespace PushFrenzy.Web
 {
@@ -15,9 +18,9 @@ namespace PushFrenzy.Web
 
         protected void Application_Start(object sender, EventArgs e)
         {
-            //RouteTable.Routes.Add(new ServiceRoute("connect", 
-            //    new WebSocketServiceHostFactory(), 
-            //    typeof(GameService)));
+            var messageStore = new InProcessMessageStore(false);
+            DependencyResolver.Register(typeof(IMessageStore), () => messageStore);
+            //TransportHeartBeat.Instance.HeartBeatInterval = TimeSpan.FromSeconds(5);            
         }
        
     }

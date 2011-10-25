@@ -56,7 +56,7 @@ namespace PushFrenzy.Server
 
         public HostedGame(GameConfiguration config)
         {
-            GameId = new Guid();
+            GameId = Guid.NewGuid();
             this.config = config;
             clients = new List<string>();
             game = new Game(config.BoardWidth, config.BoardHeight);
@@ -73,10 +73,11 @@ namespace PushFrenzy.Server
                 var player = new Player(name);
                 game.AddPlayer(player);
                 
-                hub.GroupManager.AddToGroup(clientId, this.GameId.ToString()).Wait();
+                hub.GroupManager.AddToGroup(clientId, this.GameId.ToString()).Wait();                
 
                 if (clients.Count == config.NumberOfPlayers)
                 {
+                    Thread.Sleep(1000);
                     this.hub = hub;
                     StartGame();                    
                 }
@@ -112,7 +113,7 @@ namespace PushFrenzy.Server
         {
             ProcessCommand(new StartGameCommand());
             Started = true;
-            //gameTimer = new Timer(o => ProcessCommand(new TimerTickCommand()), null, 0, Game.ExpectedTickIntervalMilliseconds);
+            gameTimer = new Timer(o => ProcessCommand(new TimerTickCommand()), null, 0, Game.ExpectedTickIntervalMilliseconds);
         }        
 
     }
@@ -147,6 +148,7 @@ namespace PushFrenzy.Server
 
         public string GameId
         {
+            //get { return "game1"; }
             get { return this.hostedGame.GameId.ToString(); }
         }
     }

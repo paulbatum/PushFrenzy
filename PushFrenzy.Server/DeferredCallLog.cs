@@ -66,7 +66,7 @@ namespace PushFrenzy.Server
 
         public void RemovePiece(Player player, Slot slot)
         {            
-            LogCall(group => group.eemovePiece(player.Name, slot.ToXY()));
+            LogCall(group => group.removePiece(player.Name, slot.ToXY()));
         }
 
         public void UpdateScores(Game game)
