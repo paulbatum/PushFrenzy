@@ -11,6 +11,7 @@ using PushFrenzy.Rules.GameCommands;
 using Microsoft.ServiceModel.WebSockets;
 using Timer = System.Threading.Timer;
 using SignalR.Hubs;
+using SignalR;
 
 namespace PushFrenzy.Server
 {
@@ -18,7 +19,7 @@ namespace PushFrenzy.Server
     {
         private ConcurrentDictionary<GameConfiguration, HostedGame> games = new ConcurrentDictionary<GameConfiguration, HostedGame>();        
 
-        public GameConnection JoinGame(string clientId, string nickname, int gameSize, IHub hub)
+        public GameConnection JoinGame(string clientId, string nickname, int gameSize, GameHub hub)
         {
             GameConfiguration config = GameConfiguration.FromNumberOfPlayers(gameSize);
             GameConnection connection = null;
@@ -49,20 +50,20 @@ namespace PushFrenzy.Server
         private object gameLock = new object();
         private object commandLock = new object();
         private Timer gameTimer;
-        private IHub hub;
 
         public bool Started { get; private set; }
-        public Guid GameId { get; private set; }
+        public string GameId { get; private set; }
+
 
         public HostedGame(GameConfiguration config)
         {
-            GameId = Guid.NewGuid();
+            GameId = "GAME " + Guid.NewGuid();
             this.config = config;
             clients = new List<string>();
             game = new Game(config.BoardWidth, config.BoardHeight);
         }
-       
-        public GameConnection TryAddPlayer(string clientId, string name, IHub hub)
+
+        public GameConnection TryAddPlayer(string clientId, string name, GameHub hub)
         {
             lock (gameLock)
             {
@@ -73,13 +74,14 @@ namespace PushFrenzy.Server
                 var player = new Player(name);
                 game.AddPlayer(player);
                 
-                hub.GroupManager.AddToGroup(clientId, this.GameId.ToString()).Wait();                
+                hub.AddToGroup(this.GameId.ToString()).Wait();                              
 
                 if (clients.Count == config.NumberOfPlayers)
                 {
-                    Thread.Sleep(1000);
-                    this.hub = hub;
-                    StartGame();                    
+                    Started = true;
+                    // Unfortunately there is a race condition where SignalR might not have actually updated the groups yet. Hacky workaround for now is to thread.sleep
+                    Thread.Sleep(200);
+                    StartGame();
                 }
 
                 return new GameConnection(clientId, player, this);
@@ -92,7 +94,7 @@ namespace PushFrenzy.Server
             {
                 var log = new DeferredCallLog();
                 command.Execute(game, log);
-                log.ExecuteCalls(hub.Agent, this.GameId.ToString());
+                log.ExecuteCalls(Hub.GetClients<GameHub>(), this.GameId.ToString());
             }
         }
 
@@ -111,8 +113,7 @@ namespace PushFrenzy.Server
 
         private void StartGame()
         {
-            ProcessCommand(new StartGameCommand());
-            Started = true;
+            ProcessCommand(new StartGameCommand());            
             gameTimer = new Timer(o => ProcessCommand(new TimerTickCommand()), null, 0, Game.ExpectedTickIntervalMilliseconds);
         }        
 

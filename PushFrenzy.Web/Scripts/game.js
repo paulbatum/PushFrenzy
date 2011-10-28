@@ -155,7 +155,7 @@
       };
       return events.removePlayer = function(name) {
         delete gameState.players[name];
-        $('#messages').prepend("<div>" + stateUpdate.name + " left.</div>");
+        $('#messages').prepend("<div>" + name + " left.</div>");
         updateScoreboard(gameState);
         return render(gameState);
       };

@@ -51,9 +51,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Chat.cs" />
     <Compile Include="DeferredCallLog.cs" />
     <Compile Include="GameHub.cs" />
     <Compile Include="GameServer.cs" />

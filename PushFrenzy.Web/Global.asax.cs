@@ -18,9 +18,7 @@ namespace PushFrenzy.Web
 
         protected void Application_Start(object sender, EventArgs e)
         {
-            var messageStore = new InProcessMessageStore(false);
-            DependencyResolver.Register(typeof(IMessageStore), () => messageStore);
-            //TransportHeartBeat.Instance.HeartBeatInterval = TimeSpan.FromSeconds(5);            
+           
         }
        
     }

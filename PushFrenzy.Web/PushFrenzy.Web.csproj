@@ -55,6 +55,7 @@
     <Reference Include="System.ServiceModel.Activation" />
     <Reference Include="System.Web" />
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="arrows.PNG" />
