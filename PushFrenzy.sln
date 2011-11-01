@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PushFrenzy.Server", "PushFr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PushFrenzy.Web", "PushFrenzy.Web\PushFrenzy.Web.csproj", "{22A07E32-C132-4E93-BCE6-97322DD0BC66}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PushFrenzy.Bot", "PushFrenzy.Bot\PushFrenzy.Bot.csproj", "{69CF84E8-8000-4F5C-A8DA-9564368EDFC0}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = LineUp.vsmdi
@@ -26,6 +28,10 @@ Global
 		{22A07E32-C132-4E93-BCE6-97322DD0BC66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22A07E32-C132-4E93-BCE6-97322DD0BC66}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22A07E32-C132-4E93-BCE6-97322DD0BC66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69CF84E8-8000-4F5C-A8DA-9564368EDFC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69CF84E8-8000-4F5C-A8DA-9564368EDFC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69CF84E8-8000-4F5C-A8DA-9564368EDFC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69CF84E8-8000-4F5C-A8DA-9564368EDFC0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6BC80195-EE96-4B72-B315-749AC9B0C0EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6BC80195-EE96-4B72-B315-749AC9B0C0EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6BC80195-EE96-4B72-B315-749AC9B0C0EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
