@@ -10,9 +10,13 @@ namespace PushFrenzy.Bot
 {
     class Program
     {
+        private static Random random;
+
         static void Main(string[] args)
         {
-            Connect();
+            random = new Random();
+            for(int i= 0; i < 7; i++)
+                Connect();
             using (ManualResetEvent mre = new ManualResetEvent(false))
                 mre.WaitOne();
 
@@ -20,32 +24,33 @@ namespace PushFrenzy.Bot
 
         static async Task Connect()
         {
-            var random = new Random();
             var directions = new[] { "Up", "Down", "Left", "Right" };            
 
             var connection = new HubConnection("http://localhost/PushFrenzy.Web/");
-            await connection.Start();
-            Console.WriteLine("Connected");
 
             var gameHub = connection.CreateProxy("PushFrenzy.Server.GameHub");
             dynamic dynamicHub = gameHub;
-            
-            var startGame = gameHub.Subscribe("startGame");
-            
-            startGame.Subscribe((object[] args) =>
-            {
-                Console.WriteLine("Game started");
-                while (connection.IsActive)
-                {
-                    string next = directions[random.Next(0, 4)];
-                    Console.WriteLine("Moving " + next);
-                    dynamicHub.Move(next);
-                    Thread.Sleep(500);
-                }
-            });
 
-            await (Task) dynamicHub.JoinGame("Bot_" + random.Next().ToString(), 2);
+            ManualResetEvent mre = new ManualResetEvent(false);
+            
+            gameHub.On("startGame", () => mre.Set());
+
+            await connection.Start();
+            Console.WriteLine("Connected");
+
+            await (Task) dynamicHub.JoinGame("Bot_" + random.Next().ToString(), 8);
             Console.WriteLine("Joined game");
+
+            mre.WaitOne();
+            Console.WriteLine("Game started");
+
+            while (connection.IsActive)
+            {
+                string next = directions[random.Next(0, 4)];
+                //Console.WriteLine("Moving " + next);
+                dynamicHub.Move(next);
+                await Task.Delay(250);
+            }
         }
     }
 }

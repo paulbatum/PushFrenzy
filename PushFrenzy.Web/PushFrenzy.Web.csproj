@@ -135,7 +135,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>22101</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost/PushFrenzy.Web</IISUrl>
+          <IISUrl>https://localhost/PushFrenzy.Web</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

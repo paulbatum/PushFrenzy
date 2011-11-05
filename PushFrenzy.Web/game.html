@@ -9,7 +9,7 @@
     <script src="Scripts/json2.min.js" type="text/javascript"></script>
     <script src="Scripts/game.js" type="text/javascript"></script>
     <script src="Scripts/input.js" type="text/javascript"></script>
-    <script src="Scripts/jquery.signalR.min.js" type="text/javascript"></script>
+    <script src="Scripts/jquery.signalR.js" type="text/javascript"></script>
     <script src="signalr/hubs" type="text/javascript"></script>
     <script type="text/javascript">
         $(document).ready(function () {
@@ -27,6 +27,13 @@
                 var gameState = game.createNewGameState();
                 game.input.bindControls($.connection);
                 game.bindEvents($.connection, gameState);
+
+                $.connection.hub.error(function () {
+                    if (document.readyState == "complete") {
+                        var warn = $('<div>').html('Connection lost. Refresh the page to join a new game.').css('color', 'red');
+                        $('#messages').prepend(warn);
+                    }
+                });
 
                 $.connection.hub.start(function () {
 
