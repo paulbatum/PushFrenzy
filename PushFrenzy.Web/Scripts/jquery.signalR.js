@@ -35,8 +35,8 @@
             /// <returns type="signalR" />
             var connection = this,
                 config = {
-                transport: "auto"
-            },
+                    transport: "auto"
+                },
                 initialize;
 
             if (connection.transport) {
@@ -243,7 +243,7 @@
                         if (!opened) {
                             if (onFailed) {
                                 onFailed();
-                            }
+                            } 
                         } else if (typeof event.wasClean != 'undefined' && event.wasClean === false) {
                             // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
                             // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
@@ -344,11 +344,11 @@
                                 }, 2 * 1000);
                             }
                         });
-                    }(connection));
+                    } (connection));
 
                     // Now connected
-                    // There's no good way know when the long poll has actually started so
-                    // we and assume it only takes around 150ms (max) to start connection
+                    // There's no good way know when the long poll has actually started so 
+                    // we and assume it only takes around 150ms (max) to start connection 
                     // to start.
                     setTimeout(onSuccess, 150);
 
@@ -408,4 +408,4 @@
 
     $.connection = $.signalR = signalR;
 
-}(window.jQuery, window));
+} (window.jQuery, window));
