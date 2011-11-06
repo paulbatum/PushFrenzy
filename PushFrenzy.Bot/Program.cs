@@ -15,8 +15,11 @@ namespace PushFrenzy.Bot
         static void Main(string[] args)
         {
             random = new Random();
-            for(int i= 0; i < 7; i++)
+            for (int i = 0; i < 500; i++)
+            {
+                Thread.Sleep(200);
                 Connect();
+            }
             using (ManualResetEvent mre = new ManualResetEvent(false))
                 mre.WaitOne();
 
@@ -38,7 +41,7 @@ namespace PushFrenzy.Bot
             await connection.Start();
             Console.WriteLine("Connected");
 
-            await (Task) dynamicHub.JoinGame("Bot_" + random.Next().ToString(), 8);
+            await (Task) dynamicHub.JoinGame("Bot_" + random.Next().ToString(), 4);
             Console.WriteLine("Joined game");
 
             mre.WaitOne();
