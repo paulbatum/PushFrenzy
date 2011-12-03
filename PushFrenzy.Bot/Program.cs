@@ -17,7 +17,7 @@ namespace PushFrenzy.Bot
             random = new Random();
             for (int i = 0; i < 500; i++)
             {
-                Thread.Sleep(200);
+                Thread.Sleep(2000);
                 Connect();
             }
             using (ManualResetEvent mre = new ManualResetEvent(false))
