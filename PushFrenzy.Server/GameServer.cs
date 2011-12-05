@@ -77,12 +77,7 @@ namespace PushFrenzy.Server
                 hub.AddToGroup(this.GameId.ToString()).Wait();                              
 
                 if (clients.Count == config.NumberOfPlayers)
-                {
-                    Started = true;
-                    // Unfortunately there is a race condition where SignalR might not have actually updated the groups yet. Hacky workaround for now is to thread.sleep
-                    Thread.Sleep(200);
                     StartGame();
-                }
 
                 return new GameConnection(clientId, player, this);
             }
@@ -113,6 +108,7 @@ namespace PushFrenzy.Server
 
         private void StartGame()
         {
+            Started = true;
             ProcessCommand(new StartGameCommand());            
             gameTimer = new Timer(o => ProcessCommand(new TimerTickCommand()), null, 0, Game.ExpectedTickIntervalMilliseconds);
         }        

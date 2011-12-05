@@ -15,37 +15,42 @@ namespace PushFrenzy.Bot
         static void Main(string[] args)
         {
             random = new Random();
-            for (int i = 0; i < 500; i++)
-            {
-                Thread.Sleep(2000);
-                Connect();
-            }
+            Connect();
             using (ManualResetEvent mre = new ManualResetEvent(false))
                 mre.WaitOne();
 
         }
 
-        static async Task Connect()
+        static async void Connect()
         {
-            var directions = new[] { "Up", "Down", "Left", "Right" };            
+            for (int i = 0; i < 63; i++)
+            {                
+                await ConnectClient();
+            }
+        }
+
+        static async Task ConnectClient()
+        {
 
             var connection = new HubConnection("http://localhost/PushFrenzy.Web/");
 
             var gameHub = connection.CreateProxy("PushFrenzy.Server.GameHub");
             dynamic dynamicHub = gameHub;
 
-            ManualResetEvent mre = new ManualResetEvent(false);
-            
-            gameHub.On("startGame", () => mre.Set());
+            gameHub.On("startGame", () => MoveLoop(connection, dynamicHub));
 
             await connection.Start();
             Console.WriteLine("Connected");
 
-            await (Task) dynamicHub.JoinGame("Bot_" + random.Next().ToString(), 4);
+            await (Task) dynamicHub.JoinGame("Bot_" + random.Next().ToString(), 8);
             Console.WriteLine("Joined game");
+        }
 
-            mre.WaitOne();
+        private static async void MoveLoop(HubConnection connection, dynamic dynamicHub)
+        {
             Console.WriteLine("Game started");
+
+            var directions = new[] { "Up", "Down", "Left", "Right" };            
 
             while (connection.IsActive)
             {
