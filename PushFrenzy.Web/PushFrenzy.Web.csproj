@@ -43,8 +43,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.WebSockets.0.1\lib\net45\Microsoft.WebSockets.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.4.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="SignalR">
       <HintPath>..\packages\SignalR.Server.0.3.3\lib\net40\SignalR.dll</HintPath>
+    </Reference>
+    <Reference Include="SignalR.AspNet">
+      <HintPath>..\packages\SignalR.Server.0.3.3\lib\net40\SignalR.AspNet.dll</HintPath>
     </Reference>
     <Reference Include="SignalR.WebSockets">
       <HintPath>..\packages\SignalR.WebSockets.0.3.2\lib\net45\SignalR.WebSockets.dll</HintPath>

@@ -16,21 +16,21 @@ namespace PushFrenzy.Server
 
         public void JoinGame(string nickname, int gameSize)
         {            
-            var id = this.Context.ClientId;            
+            var id = this.Context.ConnectionId;            
             GameConnection connection = server.JoinGame(id, nickname, gameSize, this);
             connections[id] = connection;            
         }
 
         public void Move(string direction)
         {
-            var connection = connections[Context.ClientId];
+            var connection = connections[Context.ConnectionId];
             connection.Move(direction);
         }
 
         public void Disconnect()
         {
             GameConnection connection;
-            connections.TryRemove(Context.ClientId, out connection);
+            connections.TryRemove(Context.ConnectionId, out connection);
             if (connection != null)
             {
                 RemoveFromGroup(connection.GameId);
