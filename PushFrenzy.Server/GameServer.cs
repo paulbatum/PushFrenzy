@@ -46,10 +46,10 @@ namespace PushFrenzy.Server
     {
         private GameConfiguration config;
         private List<string> clients;
-        private Game game;
-        private object gameLock = new object();
-        private object commandLock = new object();
+        private Game game;        
         private Timer gameTimer;
+        private object gameLock;
+        private BlockingCollection<GameCommand> commandQueue;
 
         public bool Started { get; private set; }
         public string GameId { get; private set; }
@@ -57,6 +57,8 @@ namespace PushFrenzy.Server
 
         public HostedGame(GameConfiguration config)
         {
+            gameLock = new object();
+            commandQueue = new BlockingCollection<GameCommand>(new ConcurrentQueue<GameCommand>());
             GameId = "GAME " + Guid.NewGuid();
             this.config = config;
             clients = new List<string>();
@@ -85,12 +87,7 @@ namespace PushFrenzy.Server
 
         public void ProcessCommand(GameCommand command)
         {
-            lock (commandLock)
-            {
-                var log = new DeferredCallLog();
-                command.Execute(game, log);
-                log.ExecuteCalls(Hub.GetClients<GameHub>(), this.GameId.ToString());
-            }
+            commandQueue.Add(command);
         }
 
         public void Disconnect(GameConnection connection)
@@ -107,12 +104,24 @@ namespace PushFrenzy.Server
         }
 
         private void StartGame()
-        {
+        {            
             Started = true;
+            Task.Factory.StartNew(RunGameLoop);
             ProcessCommand(new StartGameCommand());            
             gameTimer = new Timer(o => ProcessCommand(new TimerTickCommand()), null, 0, Game.ExpectedTickIntervalMilliseconds);
-        }        
+        }
 
+
+        private void RunGameLoop()
+        {
+            while (game.Players.Count > 0)
+            {
+                var command = commandQueue.Take();
+                var log = new DeferredCallLog();
+                command.Execute(game, log);
+                log.ExecuteCalls(Hub.GetClients<GameHub>(), this.GameId.ToString());
+            }
+        }      
     }
 
     public class GameConnection
