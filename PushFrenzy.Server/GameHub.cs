@@ -27,15 +27,18 @@ namespace PushFrenzy.Server
             connection.Move(direction);
         }
 
-        public void Disconnect()
+        public Task Disconnect()
         {
-            GameConnection connection;
-            connections.TryRemove(Context.ConnectionId, out connection);
-            if (connection != null)
-            {
-                RemoveFromGroup(connection.GameId);
-                connection.Disconnect();
-            }
+            return Task.Factory.StartNew(() =>
+                {
+                    GameConnection connection;
+                    connections.TryRemove(Context.ConnectionId, out connection);
+                    if (connection != null)
+                    {
+                        this.Groups.Remove(Context.ConnectionId, connection.GameId);
+                        connection.Disconnect();
+                    }
+                });
         }
     }
 }

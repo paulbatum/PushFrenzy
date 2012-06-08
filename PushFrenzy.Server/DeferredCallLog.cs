@@ -17,9 +17,9 @@ namespace PushFrenzy.Server
             calls.Add(action);
         }
 
-        public void ExecuteCalls(IClientAgent agent, string gameId)
-        {
-            var clients = ((dynamic)agent)[gameId];
+        public void ExecuteCalls(IHubContext hubContext, string gameId)
+        {            
+            var clients = hubContext.Clients[gameId];
             foreach (var call in calls)
                 call(clients);
         }

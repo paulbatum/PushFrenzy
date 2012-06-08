@@ -76,7 +76,7 @@ namespace PushFrenzy.Server
                 var player = new Player(name);
                 game.AddPlayer(player);
                 
-                hub.AddToGroup(this.GameId.ToString()).Wait();                              
+                hub.Groups.Add(clientId, GameId).Wait();                              
 
                 if (clients.Count == config.NumberOfPlayers)
                     StartGame();
@@ -119,7 +119,10 @@ namespace PushFrenzy.Server
                 var command = commandQueue.Take();
                 var log = new DeferredCallLog();
                 command.Execute(game, log);
-                log.ExecuteCalls(Hub.GetClients<GameHub>(), this.GameId.ToString());
+
+
+                IHubContext hubContext = GlobalHost.ConnectionManager.GetHubContext<GameHub>();
+                log.ExecuteCalls(hubContext, this.GameId.ToString());
             }
         }      
     }
